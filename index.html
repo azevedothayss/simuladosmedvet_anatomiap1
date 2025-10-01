@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simulado Anatomia P1</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#0b1225; --muted:#94a3b8; --text:#e2e8f0;
+    --primary:#22d3ee; --primary-2:#06b6d4; --accent:#a78bfa; --ok:#34d399; --warn:#f59e0b; --err:#f43f5e;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0; padding:0; background:linear-gradient(180deg,#0b1021,#0f172a);
+    color:var(--text); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial
+  }
+  .shell{max-width:980px; margin:40px auto; padding:0 16px;}
+  .hero{
+    position:relative; border-radius:18px; overflow:hidden; min-height:180px; background:#0b1021;
+    display:grid; align-items:end; padding:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25), inset 0 0 120px rgba(34,211,238,.08);
+    background:
+      radial-gradient(1000px 380px at 20% 20%, rgba(34,211,238,.25), transparent 60%),
+      radial-gradient(1000px 380px at 80% 10%, rgba(167,139,250,.2), transparent 55%),
+      linear-gradient(180deg,#0b1021,#0b1021);
+    background-size:cover; background-position:center;
+  }
+  .hero::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(15,23,42,.1), rgba(15,23,42,.8))}
+  .hero>*{position:relative; z-index:2}
+  .title{font-size:clamp(22px,3.4vw,36px); font-weight:800; letter-spacing:.2px}
+  .subtitle{color:var(--muted)}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px}
+
+  /* botões */
+  .btn,.ghost{
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text);
+    padding:10px 14px; border-radius:12px; cursor:pointer; transition:.2s transform ease,.25s background,.25s box-shadow;
+    font-weight:700; letter-spacing:.2px; backdrop-filter: blur(6px);
+  }
+  .btn.primary{
+    background:linear-gradient(180deg,var(--primary),var(--primary-2));
+    color:#001017; border:none;
+    box-shadow:0 12px 30px rgba(6,182,212,.35);
+  }
+  .btn.big{ font-size:18px; padding:14px 20px; border-radius:14px }
+  .btn:hover,.ghost:hover{ transform:translateY(-1px); box-shadow:0 8px 28px rgba(2,132,199,.25) }
+
+  .card{
+    margin-top:22px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px;
+    box-shadow:0 12px 36px rgba(0,0,0,.25)
+  }
+  .grid2{ display:grid; gap:14px; grid-template-columns:1fr }
+  @media(min-width:860px){ .grid2{ grid-template-columns:2fr 1fr } }
+
+  .progress{ height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden }
+  .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .25s ease }
+  .meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:14px; margin-top:8px }
+
+  .q{ display:grid; gap:12px }
+  .q h3{ margin:0 0 6px; font-size:20px }
+  .opt{
+    display:block; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:12px; cursor:pointer;
+    background:rgba(255,255,255,.02); transition:.2s
+  }
+  .opt:hover{ background:rgba(255,255,255,.06) }
+  .opt input{ margin-right:10px }
+
+  .controls{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap }
+  .pill{ padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); color:var(--muted)}
+  .hidden{ display:none!important }
+
+  .result{ display:grid; gap:12px }
+  .score{
+    display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px;
+    background:rgba(20,255,200,.07); border:1px solid rgba(34,211,238,.25)
+  }
+  .score b{ font-size:18px }
+  .bad{ background:rgba(255,100,100,.07); border-color:rgba(244,63,94,.3) }
+  .ok{ background:rgba(0,255,171,.07); border-color:rgba(52,211,153,.35) }
+
+  .kbd{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; background:#111827; color:#e5e7eb; padding:2px 6px; border-radius:6px; border:1px solid #374151 }
+  .flex{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+  .right{ margin-left:auto }
+  canvas{ width:100%; height:220px; background:rgba(255,255,255,.03); border-radius:12px; border:1px solid rgba(255,255,255,.08)}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hero">
+      <div>
+        <div class="title">Simulado Anatomia P1</div>
+        <div class="subtitle">feito por Thais Azevedo</div>
+        <div class="row">
+          <!-- Botão Iniciar mais evidente -->
+          <button class="btn primary big" id="btnStart">▶️ Iniciar simulado</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div class="meta">
+          <div id="metaLeft">Aguardando início…</div>
+          <div class="flex">
+            <span class="pill" id="pillTimer">⏱️ 00:00</span>
+            <span class="pill" id="pillIndex">0/0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="result" id="panelStats">
+          <div class="score" id="scoreBox"><b>Sem tentativa ainda.</b> Inicie o simulado para ver seus resultados aqui.</div>
+          <div>Histórico de desempenho:</div>
+          <canvas id="chart"></canvas>
+          <div class="flex">
+            <button class="btn" id="btnDownload">💾 Baixar relatório</button>
+            <button class="ghost" id="btnResetStats">🧹 Limpar histórico</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="panelQuiz">
+      <div class="q" id="qBox">
+        <h3>Pronto para começar!</h3>
+        <div>Clique em <b>Iniciar simulado</b> e responda às questões. Ative <span class="kbd">Mostrar justificativa</span> se quiser ver dicas/resumos durante o estudo.</div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="btnPrev">⬅️ Anterior</button>
+        <button class="btn" id="btnNext">Próxima ➡️</button>
+        <button class="btn" id="btnReview">🔍 Revisar questão</button>
+        <button class="btn" id="btnFinish">🏁 Finalizar</button>
+        <div class="right"></div>
+        <label class="flex" style="gap:6px"><input type="checkbox" id="shuffle"> Embaralhar questões</label>
+        <label class="flex" style="gap:6px"><input type="checkbox" id="toggleJust"> Mostrar justificativa</label>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   QUIZ DATA – 52 questões (respostas zero-based: 0=a,1=b,2=c,3=d)
+   ============================================================ */
+const quizData = [
+  {type:"mcq",id:1,question:"Qual é a principal função do sistema digestório?",options:["a) Produzir hormônios para o crescimento.","b) Realizar a troca gasosa para a respiração.","c) Processar e digerir alimentos para absorver nutrientes, água e eletrólitos.","d) Filtrar o sangue e remover resíduos metabólicos."],answer:2,justification:"O sistema digestório processa o alimento e permite absorção de nutrientes, água e eletrólitos."},
+  {type:"mcq",id:2,question:"O que é a faringe e qual a sua principal função?",options:["a) Um órgão do sistema respiratório cuja principal função é a produção de som.","b) Uma glândula responsável pela produção de saliva.","c) Uma porção do esôfago que armazena alimento.","d) Um tubo fibromuscular comum aos sistemas digestório e respiratório, que conduz alimento da boca ao esôfago e ar da cavidade nasal à laringe."],answer:3,justification:"A faringe é via comum de ar e alimento, conduzindo-os às vias adequadas."},
+  {type:"mcq",id:3,question:"Quais são as duas divisões da faringe, e por qual estrutura elas são separadas?",options:["a) Esôfago e Laringe, separadas pelo palato duro.","b) Nasofaringe e Laringofaringe, separadas pelo arco palatofaríngeo.","c) Nasofaringe e Orofaringe, separadas pelo palato mole.","d) Orofaringe e Esôfago, separadas pela epiglote."],answer:2,justification:"Nasofaringe e Orofaringe separadas pelo palato mole."},
+  {type:"mcq",id:4,question:"Durante a deglutição, o que acontece com o palato mole?",options:["a) Ele se retrai, abrindo a passagem para a laringe.","b) Ele se move para baixo, bloqueando o esôfago.","c) Ele se eleva e se estende para trás (dorsal e caudalmente), isolando a nasofaringe da orofaringe.","d) Ele permanece imóvel, não interferindo na passagem."],answer:2,justification:"Eleva-se e isola a nasofaringe para evitar refluxo nasal."},
+  {type:"mcq",id:5,question:"Como a laringe e a epiglote agem durante a deglutição para evitar que o alimento entre na traqueia?",options:["a) A laringe se eleva e a epiglote se retrai, mantendo a traqueia aberta.","b) A laringe se move para baixo e a epiglote fica imóvel.","c) A laringe se eleva e a epiglote se inclina caudalmente, fechando a abertura da laringe e desviando o alimento para o esôfago.","d) Ambas permanecem abertas, e o controle é feito apenas pelo reflexo da tosse."],answer:2,justification:"Elevação laríngea + basculamento da epiglote protegem a via aérea."},
+  {type:"mcq",id:6,question:"Qual a diferença de função entre a nasofaringe e a orofaringe em relação à passagem de ar e alimento?",options:["a) A nasofaringe só conduz ar e a orofaringe só conduz alimento.","b) A nasofaringe só é passagem de ar; a orofaringe é passagem comum de ar e alimento.","c) A nasofaringe é passagem comum e a orofaringe é apenas de ar.","d) Ambas são apenas de alimento."],answer:1,justification:"Nasofaringe: ar. Orofaringe: ar e alimento."},
+  {type:"mcq",id:7,question:"Que nervo controla a fase involuntária da deglutição?",options:["a) Nervo Trigêmeo (V).","b) Nervo Facial (VII).","c) Nervo Hipoglosso (XII).","d) Nervo Glossofaríngeo (IX) e Vago (X)."],answer:3,justification:"IX e X coordenam reflexos de deglutição."},
+  {type:"mcq",id:8,question:"Em qual espécie o palato mole é estendido, impedindo a respiração pela boca?",options:["a) Suínos.","b) Bovinos.","c) Equinos.","d) Caninos."],answer:2,justification:"Equinos respiram obrigatoriamente pelo nariz."},
+  {type:"mcq",id:9,question:"Quais são as duas articulações que permitem a movimentação das cartilagens da laringe?",options:["a) Articulação cricotireóidea e Articulação hioepiglótica.","b) Articulação cricoaritenóidea e Articulação aritenocorniculada.","c) Articulação cricotireóidea e Articulação cricoaritenóidea.","d) Articulação cricofaríngea e Articulação tireofaríngea."],answer:2,justification:"Cricotireóidea e cricoaritenóidea."},
+  {type:"mcq",id:10,question:"Descreva a função do esôfago.",options:["a) Produzir enzimas digestivas.","b) Transportar o alimento da faringe para o estômago por meio de movimentos peristálticos.","c) Absorver a maior parte dos nutrientes.","d) Armazenar e umedecer o bolo alimentar."],answer:1,justification:"Função de condução por peristalse."},
+  {type:"mcq",id:11,question:"O que são movimentos peristálticos e como eles funcionam no esôfago?",options:["a) Movimentos de mistura que quebram o alimento em partículas menores.","b) Movimentos de relaxamento do estômago para acomodar o alimento.","c) Contrações musculares coordenadas em ondas que impulsionam o alimento em direção ao estômago.","d) Relaxamento da musculatura lisa do esôfago."],answer:2,justification:"Ondas de contração coordenadas empurram o bolo."},
+  {type:"mcq",id:12,question:"Quais são as três porções do esôfago?",options:["a) Porção faríngea, Porção gástrica e Porção pilórica.","b) Porção cervical, Porção torácica e Porção abdominal.","c) Porção anterior, Porção média e Porção posterior.","d) Porção esofágica, Porção jejunal e Porção ileal."],answer:1,justification:"Cervical, torácica e abdominal."},
+  {type:"mcq",id:13,question:"O que acontece com as fibras musculares do esôfago quando o alimento chega?",options:["a) Elas relaxam de uma vez, permitindo a queda livre do alimento.","b) Elas se contraem em ondas peristálticas, impulsionando o bolo alimentar.","c) Elas se contraem apenas na porção abdominal.","d) Elas produzem muco para lubrificar o alimento."],answer:1,justification:"Contrações em onda impulsionam o bolo."},
+  {type:"mcq",id:14,question:"Qual é a função da segunda onda peristáltica no esôfago?",options:["a) Iniciar o processo de digestão química.","b) Limpar o esôfago de qualquer resíduo alimentar que não tenha sido removido pela primeira onda.","c) Abrir o esfíncter pilórico.","d) Promover a mistura do alimento com enzimas."],answer:1,justification:"A segunda onda “varre” resíduos restantes."},
+  {type:"mcq",id:15,question:"O que acontece com o esôfago na região do hiato esofágico?",options:["a) Ele se torna mais largo e dobra-se.","b) Ele libera enzimas digestivas.","c) Ele penetra no abdômen (cavidade abdominal), atravessando o músculo diafragma (hiato esofágico).","d) Ele se conecta diretamente com o intestino delgado."],answer:2,justification:"Atravessa o diafragma pelo hiato esofágico."},
+  {type:"mcq",id:16,question:"O que é o estômago e qual sua função principal?",options:["a) É um órgão glandular que filtra toxinas.","b) É uma dilatação do tubo digestório que armazena o alimento e inicia a digestão de proteínas.","c) É um tubo muscular que absorve água e eletrólitos.","d) É o local onde ocorre a digestão de gorduras."],answer:1,justification:"Armazena e inicia digestão proteica."},
+  {type:"mcq",id:17,question:"Que substâncias, além das enzimas, o estômago produz para a digestão?",options:["a) Bile e Lipase.","b) Hormônios (Insulina e Glucagon).","c) Ácido clorídrico (HCl) e Fator Intrínseco.","d) Amilase salivar e Muco."],answer:2,justification:"HCl e fator intrínseco."},
+  {type:"mcq",id:18,question:"Qual é a principal forma de digestão nos animais com estômago simples?",options:["a) Fermentação microbiana.","b) Digestão química e mecânica (movimentos de mistura).","c) Ação de bactérias simbióticas.","d) Absorção direta de nutrientes."],answer:1,justification:"Química (HCl/enzimas) e mecânica (mistura)."},
+  {type:"mcq",id:19,question:"Quais são as quatro regiões em que o estômago simples é dividido?",options:["a) Cárdia, Esfíncter, Fundo e Piloro.","b) Esôfago, Fundo, Corpo e Intestino.","c) Cárdia, Fundo, Corpo e Porção Pilórica.","d) Rúmen, Retículo, Omaso e Abomaso."],answer:2,justification:"Cárdia, Fundo, Corpo e pilórica."},
+  {type:"mcq",id:20,question:"Por que o estômago tem uma grande capacidade de distensão?",options:["a) Devido à presença de micro-organismos que produzem gás.","b) Por ser um órgão extremamente rígido.","c) Devido à presença de pregas (rugas gástricas) na mucosa e relaxamento das camadas musculares.","d) Devido ao seu constante enchimento por líquidos."],answer:2,justification:"Rugas gástricas e complacência muscular."},
+  {type:"mcq",id:21,question:"Qual é o formato do estômago simples e quais são suas duas curvaturas?",options:["a) Formato de \"U\"; Curvatura ventral e Curvatura dorsal.","b) Formato de \"S\"; Curvatura anterior e Curvatura posterior.","c) Formato de \"J\"; Curvatura menor (medial/cranial) e Curvatura maior (lateral/caudal).","d) Formato esférico; Curvatura superior e Curvatura inferior."],answer:2,justification:"Formato de J; curvatura menor e maior."},
+  {type:"mcq",id:22,question:"Dê exemplos de animais que possuem estômago simples.",options:["a) Bovinos e Caprinos.","b) Caninos, Felinos, Suínos e Equinos.","c) Ovinos e Camelos.","d) Ruminantes e Aves."],answer:1,justification:"Cães, gatos, suínos e equinos."},
+  {type:"mcq",id:23,question:"Que característica anatômica do estômago explica a facilidade de cães e gatos em regurgitar?",options:["a) A grande acidez do suco gástrico.","b) A musculatura lisa do piloro.","c) O desenvolvimento fraco da camada muscular na região da Cárdia.","d) O formato alongado do corpo do estômago."],answer:2,justification:"Cárdia menos desenvolvida favorece refluxo."},
+  {type:"mcq",id:24,question:"Que estrutura exclusiva o estômago dos suínos possui para aumentar ainda mais seu volume?",options:["a) A glândula pilórica.","b) O divertículo gástrico.","c) O esfíncter esofágico forte.","d) O divertículo gástrico (ou cego)."],answer:3,justification:"Suínos têm divertículo gástrico."},
+  {type:"mcq",id:25,question:"Qual a característica anatômica do estômago de equinos que impede o vômito?",options:["a) Esfíncter pilórico fraco.","b) Grande volume do intestino.","c) Esfíncter esofágico (Cárdia) forte e ângulo oblíquo de entrada do esôfago.","d) Estômago muito pequeno."],answer:2,justification:"Cárdia forte + ângulo oblíquo impedem refluxo."},
+  {type:"mcq",id:26,question:"Quais são as regiões da mucosa gástrica e o que cada uma produz?",options:["a) Cárdia (apenas enzimas) e Fundo (apenas muco).","b) Cárdia (Muco), Fundo e Corpo (HCl, Pepsinogênio, Fator Intrínseco) e Pilórica (Muco, Gastrina).","c) Corpo (Somente água) e Pilórica (Bile).","d) Rúmen (AGVs) e Retículo (Muco)."],answer:1,justification:"Cárdia: muco; Fundo/Corpo: HCl/pepsinogênio/fator; Pilórica: muco/gastrina."},
+  {type:"mcq",id:27,question:"Qual a função do suco gástrico e do muco?",options:["a) Suco gástrico umedece o alimento e o muco inicia digestão de carboidratos.","b) Suco gástrico (HCl) destrói microrganismos e desnatura proteínas; muco protege a mucosa.","c) Suco gástrico emulsifica gorduras e muco absorve água.","d) Suco gástrico neutraliza o pH e muco é o principal agente de digestão."],answer:1,justification:"HCl antimicrobiano e desnaturante; muco protege epitélio."},
+  {type:"mcq",id:28,question:"Quais são as quatro estruturas que compõem o estômago dos ruminantes?",options:["a) Esôfago, Pâncreas, Baço e Fígado.","b) Cárdia, Fundo, Corpo e Piloro.","c) Rúmen, Retículo, Omaso e Abomaso.","d) Intestino Delgado, Ceco, Cólon e Reto."],answer:2,justification:"Rúmen, retículo, omaso e abomaso."},
+  {type:"mcq",id:29,question:"Dê exemplos de animais que possuem estômago composto.",options:["a) Cães e Gatos.","b) Cavalos e Porcos.","c) Bovinos, Ovinos, Caprinos e outros Ruminantes.","d) Aves e Répteis."],answer:2,justification:"Ruminantes têm estômago composto."},
+  {type:"mcq",id:30,question:"Como se desenvolve o estômago composto de um bezerro?",options:["a) Todas as câmaras iguais desde o nascimento.","b) No nascimento, abomaso é o maior/mais funcional; com dieta sólida, rúmen e retículo crescem e assumem função fermentativa.","c) O omaso se desenvolve primeiro.","d) O rúmen já é grande no nascimento e o abomaso cresce depois."],answer:1,justification:"Abomaso prevalente ao nascer; rúmen/retículo expandem com o desmame."},
+  {type:"mcq",id:31,question:"Explique o processo de simbiose que ocorre no rúmen e retículo.",options:["a) Células do rúmen produzem enzimas para celulose.","b) Hospedeiro absorve água e microrganismos produzem muco.","c) Rúmen e retículo são reservatórios estéreis.","d) Microrganismos fermentam carboidratos complexos em AGVs, absorvidos como energia principal."],answer:3,justification:"Fermentação microbiana gera AGVs (energia)."},
+  {type:"mcq",id:32,question:"O que é o omaso e qual sua função?",options:["a) Estômago glandular da digestão química.","b) Câmara principal de fermentação e produção de gás.","c) Terceiro compartimento em “folhas de livro”, que absorve água e filtra partículas finas.","d) Câmara de separação de partículas grosseiras e finas."],answer:2,justification:"Omaso absorve água e seleciona partículas."},
+  {type:"mcq",id:33,question:"Qual compartimento do estômago composto é mais semelhante ao estômago simples?",options:["a) Rúmen.","b) Retículo.","c) Omaso.","d) Abomaso (verdadeiro, secreta ácido e enzimas)."],answer:3,justification:"Abomaso equivale ao estômago simples."},
+  {type:"mcq",id:34,question:"Onde o abomaso está localizado em relação ao rúmen?",options:["a) Cranialmente ao rúmen, na região dorsal.","b) Dorsalmente ao rúmen, à esquerda.","c) Ventral e caudalmente ao rúmen (principalmente à direita da linha média).","d) Lateralmente ao rúmen."],answer:2,justification:"Posição ventro-caudal, majoritariamente à direita."},
+  {type:"mcq",id:35,question:"Qual a função do retículo na digestão dos ruminantes?",options:["a) Secretar HCl.","b) Absorver a maior parte dos AGVs.","c) Capturar materiais pesados/estranhos e atuar na ruminação (separação/regurgitação).","d) Principal local de absorção de água."],answer:2,justification:"Retém corpos estranhos e participa da seleção/regurgitação."},
+  {type:"mcq",id:36,question:"Descreva a estrutura interna da mucosa do retículo.",options:["a) Lisa e coberta por pequenas vilosidades.","b) Pregas gástricas longitudinais.","c) Padrão de “favos de mel” (hexágonos).","d) Numerosas folhas ou lâminas."],answer:2,justification:"Aspecto em colmeia é típico do retículo."},
+  {type:"mcq",id:37,question:"O que é a goteira esofágica e qual sua função na amamentação dos filhotes ruminantes?",options:["a) Ducto que conecta rúmen a omaso.","b) Estrutura que secreta enzimas do leite.","c) Reflexo que desvia o leite do esôfago direto ao abomaso, evitando fermentação no rúmen.","d) Válvula de saída de gases do rúmen."],answer:2,justification:"Fecha como “ponte” e envia leite ao abomaso."},
+  {type:"mcq",id:38,question:"Quais são as duas porções em que o intestino é dividido e qual a função de cada uma?",options:["a) Jejuno e Íleo: absorver água.","b) Intestino Delgado (digestão/absorção de nutrientes) e Intestino Grosso (absorção de água/eletrólitos e fermentação em herbívoros).","c) Estômago e Intestino: armazenar/digerir.","d) Ceco e Cólon: apenas expelir fezes."],answer:1,justification:"Delgado absorve nutrientes; grosso absorve água e fermenta."},
+  {type:"mcq",id:39,question:"Por que o intestino dos carnívoros é mais curto do que o dos herbívoros?",options:["a) Porque os carnívoros comem menos.","b) Porque requer longa fermentação microbiana.","c) Dieta carnívora é digerida mais rapidamente que celulose dos herbívoros.","d) Carnívoros não absorvem nutrientes, apenas água."],answer:2,justification:"Proteínas e gorduras são digeridas mais rápido que celulose."},
+  {type:"mcq",id:40,question:"Qual porção do intestino é responsável pela digestão fermentativa nos equinos?",options:["a) Intestino Delgado.","b) Intestino Grosso (Ceco e Cólon Maior).","c) Abomaso.","d) Duodeno."],answer:1,justification:"Equinos são fermentadores de intestino grosso."},
+  {type:"mcq",id:41,question:"Quais são as três partes do intestino delgado?",options:["a) Esôfago, Estômago e Duodeno.","b) Duodeno, Jejuno e Íleo.","c) Ceco, Cólon e Reto.","d) Cárdia, Fundo e Piloro."],answer:1,justification:"Delgado: duodeno, jejuno, íleo."},
+  {type:"mcq",id:42,question:"Qual a função do duodeno?",options:["a) Absorver vitamina B12 e sais biliares.","b) Receber o quimo, neutralizar acidez e receber bile/pancreático para iniciar digestão química.","c) Armazenar fezes.","d) Absorver a maior parte da água."],answer:1,justification:"Neutralização + chegada de bile e suco pancreático."},
+  {type:"mcq",id:43,question:"Qual a maior porção do intestino delgado?",options:["a) Duodeno.","b) Íleo.","c) Jejuno (principal absorção de aminoácidos, monossacarídeos e ácidos graxos).","d) Ceco."],answer:2,justification:"Jejuno é extenso e muito absortivo."},
+  {type:"mcq",id:44,question:"O que são os linfonodos jejunais (mesentério) e qual a sua função?",options:["a) Estruturas responsáveis pela produção de enzimas digestivas.","b) Gânglios linfáticos no mesentério que filtram linfa do intestino para proteção imunológica.","c) Local de absorção da bile.","d) Células responsáveis pela peristalse."],answer:1,justification:"Vigilância imunológica do trato intestinal."},
+  {type:"mcq",id:45,question:"Qual a função das glândulas salivares?",options:["a) Produzir suco gástrico.","b) Produzir saliva (umedecer, lubrificar e, em suínos, iniciar digestão de carboidratos).","c) Secretar bile para o duodeno.","d) Absorver AGVs."],answer:1,justification:"Saliva facilita deglutição e pode ter amilase (suínos)."},
+  {type:"mcq",id:46,question:"Qual a função da bile e onde ela é liberada?",options:["a) Digere proteínas e é liberada no estômago.","b) Neutraliza o pH do estômago e é liberada no rúmen.","c) Emulsifica gorduras e é liberada no duodeno.","d) Absorve água e é liberada no intestino grosso."],answer:2,justification:"Emulsifica lipídios no duodeno."},
+  {type:"mcq",id:47,question:"Qual o órgão responsável por produzir o suco pancreático e onde ele é liberado?",options:["a) Fígado, liberado no estômago.","b) Vesícula biliar, liberada no intestino grosso.","c) Pâncreas, liberado no duodeno (enzimas e bicarbonato).","d) Baço, liberado no jejuno."],answer:2,justification:"Pâncreas → duodeno; amilase, lipase, proteases e bicarbonato."},
+  {type:"mcq",id:48,question:"Que espécie não possui vesícula biliar?",options:["a) Suínos.","b) Gatos.","c) Equinos.","d) Bovinos."],answer:2,justification:"Equinos não têm vesícula biliar."},
+  {type:"mcq",id:49,question:"Qual a função dos dentes incisivos, caninos, pré-molares e molares?",options:["a) Todos trituram.","b) Incisivos (apreensão/corte), Caninos (perfuração/segurar), Pré-molares e Molares (triturar/moer).","c) Incisivos (moer) e Molares (cortar).","d) Caninos (apreensão) e Incisivos (trituração)."],answer:1,justification:"Funções específicas por tipo dentário."},
+  {type:"mcq",id:50,question:"Qual a principal característica da fórmula dentária de ruminantes?",options:["a) Ausência de caninos e presença de incisivos superiores.","b) Dentes iguais aos carnívoros.","c) Ausência de incisivos e caninos superiores, substituídos pelo pulvino dentário (placa dura).","d) Molares/pré-molares muito reduzidos."],answer:2,justification:"Pulvino dentário substitui incisivos/caninos superiores."},
+  {type:"mcq",id:51,question:"O que é o pulvino dentário?",options:["a) O primeiro molar do equino.","b) Placa dura fibrosa que substitui incisivos/caninos superiores nos ruminantes, ajudando na preensão da forragem.","c) Um dente canino muito grande.","d) Crescimento ósseo na mandíbula."],answer:1,justification:"Estrutura fibrosa dura que substitui dentes anteriores superiores."},
+  {type:"mcq",id:52,question:"Quais são as três porções do aparelho respiratório e quais estruturas compõem a porção condutora?",options:["a) Pulmão, Brônquios e Bronquíolos; condutora: Alvéolos.","b) Porção condutora, Porção de transição e Porção respiratória; condutora: Narinas, Fossas Nasais, Faringe, Laringe, Traqueia, Brônquios e Bronquíolos.","c) Superior, Média e Inferior; condutora: Pulmões.","d) Nariz, Laringe e Pulmão; condutora: Faringe e Esôfago."],answer:1,justification:"Condutora = vias que conduzem o ar até a porção respiratória."}
+];
+
+/* ============================================================
+   ESTADO / ELEMENTOS
+   ============================================================ */
+const els = {
+  btnStart: document.getElementById('btnStart'),
+  bar: document.getElementById('bar'),
+  metaLeft: document.getElementById('metaLeft'),
+  pillTimer: document.getElementById('pillTimer'),
+  pillIndex: document.getElementById('pillIndex'),
+  qBox: document.getElementById('qBox'),
+  btnPrev: document.getElementById('btnPrev'),
+  btnNext: document.getElementById('btnNext'),
+  btnReview: document.getElementById('btnReview'),
+  btnFinish: document.getElementById('btnFinish'),
+  shuffle: document.getElementById('shuffle'),
+  toggleJust: document.getElementById('toggleJust'),
+  scoreBox: document.getElementById('scoreBox'),
+  chart: document.getElementById('chart'),
+  btnDownload: document.getElementById('btnDownload'),
+  btnResetStats: document.getElementById('btnResetStats')
+};
+
+let state = { started:false, idx:0, order:[], answers:{}, timerHandle:null, secs:0 };
+
+/* ============================================================
+   FUNÇÕES DE UI / LÓGICA
+   ============================================================ */
+function fmtTime(s){ const m=Math.floor(s/60), ss=s%60; return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; }
+function setProgress(){
+  const total=quizData.length, cur=Math.min(state.idx+1,total);
+  els.pillIndex.textContent = `${cur}/${total}`;
+  els.bar.style.width = `${(cur/total*100).toFixed(1)}%`;
+  els.metaLeft.textContent = state.started ? "Respondendo…" : "Aguardando início…";
+}
+function tick(){ state.secs++; els.pillTimer.textContent = `⏱️ ${fmtTime(state.secs)}`; }
+function startTimer(){ stopTimer(); state.secs=0; els.pillTimer.textContent="⏱️ 00:00"; state.timerHandle=setInterval(tick,1000); }
+function stopTimer(){ if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle=null; } }
+
+function renderQuestion(){
+  const q = quizData[state.order[state.idx]];
+  let html = `<h3>${state.idx+1}. ${q.question}</h3>`;
+  if(q.type==='mcq'){
+    q.options.forEach((op,i)=>{
+      const key=`q_${q.id}`, checked = state.answers[key]===i ? 'checked':'';
+      html += `<label class="opt"><input type="radio" name="${key}" value="${i}" ${checked}> ${op}</label>`;
+    });
+  } else {
+    const key=`q_${q.id}`, val=(state.answers[key]??'');
+    html += `<textarea id="ta_${q.id}" placeholder="Digite sua resposta..." rows="4">${val||''}</textarea>`;
+  }
+  if(els.toggleJust.checked && q.justification){
+    html += `<div class="pill" style="margin-top:6px; border-color:rgba(167,139,250,.35); color:#c7d2fe">💡 Justificativa: ${q.justification}</div>`;
+  }
+  els.qBox.innerHTML = html;
+
+  if(q.type==='mcq'){
+    els.qBox.querySelectorAll('input[type=radio]').forEach(r=>{
+      r.addEventListener('change', e=>{ state.answers[`q_${q.id}`]=Number(e.target.value); });
+    });
+  } else {
+    const t=document.getElementById(`ta_${q.id}`);
+    t.addEventListener('input', e=>{ state.answers[`q_${q.id}`]=e.target.value.trim(); });
+  }
+  setProgress();
+}
+
+function next(){ if(state.idx<quizData.length-1){ state.idx++; renderQuestion(); } }
+function prev(){ if(state.idx>0){ state.idx--; renderQuestion(); } }
+function review(){
+  const q=quizData[state.order[state.idx]], key=`q_${q.id}`;
+  let msg='';
+  if(q.type==='mcq'){
+    const sel=state.answers[key];
+    msg += sel==null ? 'Você ainda não marcou nenhuma opção.' : `Você marcou: ${q.options[sel]}`;
+    if(q.answer!=null){ msg += `\nGabarito: ${q.options[q.answer]}`; }
+  } else {
+    msg += `Sua resposta:\n${state.answers[key] || '(em branco)'}`;
+  }
+  alert(msg);
+}
+
+function finish(){
+  stopTimer();
+  let correct=0, totalObj=0;
+  quizData.forEach(q=>{
+    if(q.type==='mcq'){
+      totalObj++;
+      const sel=state.answers[`q_${q.id}`];
+      if(typeof sel==='number' && sel===q.answer) correct++;
+    }
+  });
+  const pct = totalObj ? Math.round(correct/totalObj*100) : 0;
+  const cls = pct>=70 ? 'score ok' : (pct>=50 ? 'score' : 'score bad');
+  els.scoreBox.className = cls;
+  els.scoreBox.innerHTML = `<b>Resultado:</b> ${correct}/${totalObj} acertos (${pct}%) • Tempo: ${fmtTime(state.secs)}`;
+  const hist = JSON.parse(localStorage.getItem('simuladoP1_hist')||'[]');
+  hist.push({ts:Date.now(),correct,total:totalObj,pct,secs:state.secs});
+  localStorage.setItem('simuladoP1_hist', JSON.stringify(hist));
+  drawChart();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function drawChart(){
+  const ctx = document.getElementById('chart').getContext('2d');
+  const hist = JSON.parse(localStorage.getItem('simuladoP1_hist')||'[]');
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  const W=ctx.canvas.width, H=ctx.canvas.height;
+  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(40,10); ctx.lineTo(40,H-30); ctx.lineTo(W-10,H-30); ctx.stroke();
+  ctx.fillStyle='rgba(226,232,240,.85)'; ctx.font='12px system-ui';
+  ctx.fillText('100%',6,18); ctx.fillText('50%',12,H/2); ctx.fillText('0%',18,H-35);
+  ctx.strokeStyle='rgba(255,255,255,0.08)';
+  ctx.beginPath(); ctx.moveTo(40,H/2); ctx.lineTo(W-10,H/2); ctx.moveTo(40,10); ctx.lineTo(W-10,10); ctx.stroke();
+  if(hist.length===0){ ctx.fillText('Sem histórico ainda.',60,H/2); return; }
+  const maxBars=Math.min(hist.length,30), data=hist.slice(-maxBars);
+  const gap=8, chartW=(W-60), barW=Math.max(10, Math.floor((chartW-gap*(maxBars-1))/maxBars));
+  let x=40;
+  data.forEach(p=>{
+    const h=Math.max(2, Math.round((p.pct/100)*(H-50)));
+    const y=(H-30)-h;
+    const grd=ctx.createLinearGradient(0,y,0,y+h);
+    grd.addColorStop(0,'#22d3ee'); grd.addColorStop(1,'#a78bfa');
+    ctx.fillStyle=grd; ctx.fillRect(x,y,barW,h);
+    if(maxBars<=15){ ctx.fillStyle='rgba(148,163,184,.8)'; ctx.fillText(`${p.pct}%`,x+2,y-4); }
+    x+=barW+gap;
+  });
+}
+
+function shuffleArray(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+els.btnStart.addEventListener('click',()=>{
+  if(!quizData.length){ alert('Sem questões.'); return; }
+  state.order=[...Array(quizData.length).keys()];
+  if(els.shuffle.checked) shuffleArray(state.order);
+  state.started=true; startTimer(); state.idx=0; renderQuestion();
+});
+els.btnNext.addEventListener('click',()=>next());
+els.btnPrev.addEventListener('click',()=>prev());
+els.btnReview.addEventListener('click',()=>review());
+els.btnFinish.addEventListener('click',()=>finish());
+els.toggleJust.addEventListener('change',()=>renderQuestion());
+
+document.getElementById('btnDownload').addEventListener('click',()=>{
+  const hist=localStorage.getItem('simuladoP1_hist')||'[]';
+  const blob=new Blob([hist],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`relatorio_simulado_anatomia_p1_${new Date().toISOString().slice(0,10)}.json`; a.click();
+});
+document.getElementById('btnResetStats').addEventListener('click',()=>{
+  if(confirm('Apagar histórico salvo neste navegador?')){
+    localStorage.removeItem('simuladoP1_hist'); drawChart();
+  }
+});
+
+/* start */
+setProgress(); drawChart();
+</script>
+</body>
+</html>
